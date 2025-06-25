@@ -43,7 +43,7 @@ public class LoginMenu : BaseCanvas {
 			OnSuccess: response => {
 				Debug.Log("Login successful: " + response.user.email);
 				AppManager.Instance.SetUser(response.user);
-				// AppManager.Instance.ChangeCanvas(Menus.MainMenu);
+				AppManager.Instance.ChangeCanvas(Menus.MainMenu);
 			}
 		);
 	}

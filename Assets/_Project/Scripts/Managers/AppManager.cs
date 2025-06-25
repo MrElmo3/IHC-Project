@@ -12,6 +12,7 @@ public enum Menus {
 	OptionsMenu,
 	StartMenu,
 	ResultsMenu,
+	SessionMenu,
 	Hided
 }
 
@@ -29,6 +30,9 @@ public class AppManager :  PersistentSingleton<AppManager> {
 
 	[Header("User")]
 	[SerializeField] UserData m_user;
+	
+	[Header("Sesion")]
+	[SerializeField]  SessionData m_sessionData;
 
 	[Header("Background")]
 	[SerializeField] GameObject m_background;
@@ -41,6 +45,7 @@ public class AppManager :  PersistentSingleton<AppManager> {
 	[SerializeField] BaseCanvas m_mainMenu;
 	[SerializeField] BaseCanvas m_optionsMenu;
 	[SerializeField] BaseCanvas m_startMenu;
+	[SerializeField] BaseCanvas m_sessionMenu;
 
 	[Header("Results Menu")]
 	[SerializeField] BaseCanvas m_resultsMenu;
@@ -62,13 +67,6 @@ public class AppManager :  PersistentSingleton<AppManager> {
 
 	void Start() {
 		ChangeCanvas(Menus.LoginMenu);
-		Instantiate(
-			m_simulationCharacter == SimulationCharacter.Joe? m_joePrefab : m_louisePrefab, 
-			m_characterSpawnPoint
-		);
-
-		//Start Sesion from Backend
-
 	}
 	
 	public void ChangeCanvas(Menus canvasType) {
@@ -99,28 +97,72 @@ public class AppManager :  PersistentSingleton<AppManager> {
 			case Menus.ResultsMenu:
 				m_currentCanvas = m_resultsMenu;
 				break;
-			case Menus.Hided:
-				HideAllCanvases();
+			case Menus.SessionMenu:
+				m_currentCanvas = m_sessionMenu;
 				break;
 		}
 		if(m_currentCanvas == null) return;
 		m_currentCanvas.Show();
-		m_background.SetActive(true);
-	}
-
-	private void HideAllCanvases() {
-		if(m_currentCanvas != null) {
-			m_currentCanvas.Hide();
+		if((Menus)m_currentCanvas.GetCanvasType() == Menus.SessionMenu  || (Menus)m_currentCanvas.GetCanvasType() == Menus.ResultsMenu) {
 			m_background.SetActive(false);
-			m_currentCanvas = null;
 		}
 	}
 
-	public void StartSimulation(string context) {
-		//charge the context and start the session in the backend
-		SceneManager.LoadScene("Office", LoadSceneMode.Additive);
-		//Instantiate Character
+	public async void StartSimulation(string context) {
+		SessionData sessionData = new SessionData {
+			user_id = m_user.id,
+			scenario_id = 1, // Assuming scenario_id is 1 for the default scenario
+			difficulty_level = m_user.preferred_difficulty.ToLower(),
+			interviewer_avatar = m_simulationCharacter.ToString(),
+			environment = m_simulationEnviroment.ToString(),
+			custom_description = context
+		};
+		SessionResponse response = await BackendCalls.SessionCreate(sessionData);
 
+		if (response == null) {
+			Debug.LogError("Failed to create session.");
+			return;
+		}
+
+		m_sessionData = response.session;
+		ChangeCanvas(Menus.SessionMenu);
+		SceneManager.LoadScene("Office", LoadSceneMode.Additive);
+
+		Instantiate(
+			m_simulationCharacter == SimulationCharacter.Joe? m_joePrefab : m_louisePrefab, 
+			m_characterSpawnPoint
+		);
+
+		SendStartConversation();
+	}
+
+	private async void SendStartConversation() {
+	if (m_sessionData == null) {
+		Debug.LogError("Session data is null. Cannot start conversation.");
+		return;
+	}
+
+	SessionMessage message = new SessionMessage {
+		message = $@"Inicia la entrevista simulada en español, eres un ent
+			revistador profesional y debes hacer preguntas al usuario para evaluar su desempeño en una entrevista de trabajo.
+			estos son los datos del usuario: {JsonUtility.ToJson(m_user)}
+			estos son los datos de la sesión: {JsonUtility.ToJson(m_sessionData)}
+			empieza con un saludo y una pregunta introductoria.",
+		speaker = "user"
+	};
+
+		await BackendCalls.SessionConversation(
+			m_sessionData.id, 
+			message,
+			OnError: error => Debug.LogError("Error during conversation: " + error),
+			OnSuccess: response => Debug.Log("Conversation started successfully: " + response.message)
+		);
+
+		QuestionResponse response = await BackendCalls.SessionQuestion(m_sessionData.id);
+
+		Debug.Log("Response from server: " + response.question);
+
+		VoiceController.Instance.Speak(response.question);
 	}
 
 	public void SetUser(UserData user) {
@@ -136,6 +178,7 @@ public class AppManager :  PersistentSingleton<AppManager> {
 	}
 
 	public UserData GetUserData() { return m_user; }
+	public SessionData GetSessionData() { return m_sessionData; }
 	public SimulationCharacter GetSimulationCharacter() { return m_simulationCharacter; }
 	public SimulationEnviroment GetSimulationEnviroment() { return m_simulationEnviroment; }
 

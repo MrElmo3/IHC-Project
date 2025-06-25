@@ -12,11 +12,11 @@ public class TestMenu : BaseCanvas {
 		base.Awake();
 		
 		m_TTSButton.onClick.AddListener(() => {
-			VoiceController.Instance.Speak("");
+			VoiceController.Instance.Speak("Esto es una prueba de texto a voz. ¿Cómo estás hoy?");
 		});
 
-		m_STTButton.onClick.AddListener(() => {
-			VoiceController.Instance.Hear();
+		m_STTButton.onClick.AddListener(async () => {
+			await VoiceController.Instance.Hear();
 		});
 	}
 }

@@ -27,7 +27,6 @@ public class StartMenu : BaseCanvas {
 		// if(string.IsNullOrEmpty(m_simulationInput.text)) {
 		// 	return;
 		// }
-		AppManager.Instance.ChangeCanvas(Menus.Hided);
-		AppManager.Instance.StartSimulation(m_simulationInput.text);
+		AppManager.Instance.StartSimulation(m_simulationInput.text);		
 	}
 }

@@ -7,27 +7,36 @@ using UnityEngine;
 public class VoiceController : Singleton<VoiceController> {
 	[SerializeField] AudioSource audioSource;
 
+	private AudioClip clip;
+
 	public async void Speak(string text) {
-		
+		if(string.IsNullOrEmpty(text)) {
+			Debug.LogWarning("Text is empty, nothing to speak.");
+			return;
+		}
 		byte[] audioBytes = Convert.FromBase64String(await BackendCalls.GenerateTTS(text));
 		audioSource.clip = ToAudioClipFromL16(audioBytes);
 		audioSource.Play();
 	}
 
-	public async void Hear(int durationSeconds = 2) {
-		AudioClip clip = Microphone.Start(null, false, durationSeconds, 24000);
-		while (Microphone.IsRecording(null)) {
-			await Task.Yield();
-		}
+	public void StartMic(){
+		clip = Microphone.Start(null, false, 1800, 24000);
+	}
+
+	public void StopMic() {
 		Microphone.End(null);
-		
+	}
+
+	public async Task<string> Hear() {		
 		// Convert to WAV format instead of raw L16
 		byte[] wavBytes = ToWavFromAudioClip(clip);
 		
-		await BackendCalls.GenerateSTT(wavBytes,
+		string response = await BackendCalls.GenerateSTT(wavBytes,
 			(error) => Debug.LogError("STT Error: " + error),
 			(response) => Debug.Log("STT Response: " + response)
 		);
+
+		return response;
 	}
 
 	private static byte[] ToWavFromAudioClip(AudioClip clip) {
