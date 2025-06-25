@@ -304,6 +304,16 @@ MonoBehaviour:
     m_KeyFunction: {fileID: 0}
     m_KeyCode: 0
     m_Disabled: 0
+  - m_Character: "\xF1"
+    m_DisplayCharacter: "\xF1"
+    m_DisplayIcon: {fileID: 0}
+    m_ShiftCharacter: "\xD1"
+    m_ShiftDisplayCharacter: 
+    m_ShiftDisplayIcon: {fileID: 0}
+    m_OverrideDefaultKeyFunction: 0
+    m_KeyFunction: {fileID: 0}
+    m_KeyCode: 0
+    m_Disabled: 0
   - m_Character: \s
     m_DisplayCharacter: shift
     m_DisplayIcon: {fileID: 373736265, guid: e6a95303640ef3c4188ac4583185f5ba, type: 3}

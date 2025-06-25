@@ -3,26 +3,25 @@ using UnityEngine.UI;
 
 public class SoundConfigController : MonoBehaviour {
 
-	[SerializeField] Slider _generalSlider;
-	[SerializeField] Slider _musicSlider;
-	[SerializeField] Slider _soundSlider;
+	[SerializeField] Slider m_generalSlider;
+	[SerializeField] Slider m_musicSlider;
+	[SerializeField] Slider m_soundSlider;
 
 	void Start() {
-		_generalSlider.value = AudioManager.Instance.GetGeneralVolume();
-		_musicSlider.value = AudioManager.Instance.GetMusicVolume();
-		_soundSlider.value = AudioManager.Instance.GetSoundVolume();
+		m_generalSlider.value = AudioManager.Instance.GetGeneralVolume();
+		m_musicSlider.value = AudioManager.Instance.GetMusicVolume();
+		m_soundSlider.value = AudioManager.Instance.GetSoundVolume();
 	}
 
-
 	public void UpdateGeneralVolume(){
-		AudioManager.Instance.UpdateGeneralVolume(_generalSlider.value);
+		AudioManager.Instance.UpdateGeneralVolume(m_generalSlider.value);
 	}
 
 	public void UpdateMusicVolume(){
-		AudioManager.Instance.UpdateMusicVolume(_musicSlider.value);
+		AudioManager.Instance.UpdateMusicVolume(m_musicSlider.value);
 	}
 
 	public void UpdateSoundVolume(){
-		AudioManager.Instance.UpdateSoundVolume(_soundSlider.value);
+		AudioManager.Instance.UpdateSoundVolume(m_soundSlider.value);
 	}
 }

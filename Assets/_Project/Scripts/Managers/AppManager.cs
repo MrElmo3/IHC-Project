@@ -1,88 +1,142 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public enum Menus {
-	Login,
-	Register,
+	TestMenu,
+	LoginMenu,
+	SigninMenu,
 	MainMenu,
+	OptionsMenu,
+	StartMenu,
+	ResultsMenu,
+	Hided
+}
+
+public enum SimulationCharacter {
+	Joe,
+	Louise
+}
+
+public enum SimulationEnviroment {
+	Office,
+	Park,
 }
 
 public class AppManager :  PersistentSingleton<AppManager> {
 
 	[Header("User")]
-	[SerializeField] UserInformation _user;
+	[SerializeField] UserData m_user;
+
+	[Header("Background")]
+	[SerializeField] GameObject m_background;
 
 	[Header("Account Menu")]
-	[SerializeField] BaseCanvas _loginMenu;
-	[SerializeField] BaseCanvas _registerMenu;
+	[SerializeField] BaseCanvas m_loginMenu;
+	[SerializeField] BaseCanvas m_registerMenu;
 
 	[Header("Main Menu")]
-	[SerializeField] BaseCanvas _mainMenu;
+	[SerializeField] BaseCanvas m_mainMenu;
+	[SerializeField] BaseCanvas m_optionsMenu;
+	[SerializeField] BaseCanvas m_startMenu;
 
-	BaseCanvas _currentCanvas;
+	[Header("Results Menu")]
+	[SerializeField] BaseCanvas m_resultsMenu;
+
+	[Header("Test Menu")]
+	[SerializeField] BaseCanvas m_testCanvas;
+
+	[Header("Character")]
+	[SerializeField] Transform m_characterSpawnPoint;
+	[SerializeField] GameObject m_joePrefab;
+	[SerializeField] GameObject m_louisePrefab;
+
+	BaseCanvas m_currentCanvas;
+
+	#region Configuration
+	private SimulationCharacter m_simulationCharacter = SimulationCharacter.Joe;
+	private SimulationEnviroment m_simulationEnviroment = SimulationEnviroment.Office;
+	#endregion
 
 	void Start() {
+		ChangeCanvas(Menus.LoginMenu);
+		Instantiate(
+			m_simulationCharacter == SimulationCharacter.Joe? m_joePrefab : m_louisePrefab, 
+			m_characterSpawnPoint
+		);
 
-		// if(Debug.isDebugBuild) PlayerPrefs.DeleteAll();
+		//Start Sesion from Backend
 
-		TryLoadUserData();
-		_currentCanvas = _mainMenu;
-
-		if(_user.email == string.Empty) {
-			_currentCanvas = _registerMenu;
-		}
-
-		_currentCanvas.Show();
 	}
 	
 	public void ChangeCanvas(Menus canvasType) {
-		if(_currentCanvas != null) {
-			if(canvasType == (Menus)_currentCanvas.GetCanvasType()) return;
-			_currentCanvas.Hide();
+		if(m_currentCanvas != null) {
+			if(canvasType == (Menus)m_currentCanvas.GetCanvasType()) return;
+			m_currentCanvas.Hide();
 		}
 
 		switch (canvasType) {
-			case Menus.Login:
-				_currentCanvas = _loginMenu;
+			case Menus.LoginMenu:
+				m_currentCanvas = m_loginMenu;
+				break;
+			case Menus.SigninMenu:
+				m_currentCanvas = m_registerMenu;
+				break;
+			case Menus.TestMenu:
+				m_currentCanvas = m_testCanvas;
+				break;
+			case Menus.MainMenu:
+				m_currentCanvas = m_mainMenu;
+				break;
+			case Menus.OptionsMenu:
+				m_currentCanvas = m_optionsMenu;
+				break;
+			case Menus.StartMenu:
+				m_currentCanvas = m_startMenu;
+				break;
+			case Menus.ResultsMenu:
+				m_currentCanvas = m_resultsMenu;
+				break;
+			case Menus.Hided:
+				HideAllCanvases();
 				break;
 		}
-
-		_currentCanvas.Show();
+		if(m_currentCanvas == null) return;
+		m_currentCanvas.Show();
+		m_background.SetActive(true);
 	}
 
-	private void TryLoadUserData() {
-		try {
-			UserInformation newUser = new();
-			_user = newUser;
-
-			_user.email = PlayerPrefs.GetString("Email");
-			_user.name = PlayerPrefs.GetString("Username");
-		}
-		catch (System.Exception e) {
-			Debug.Log("Fail Loading _user Data! " + e);
+	private void HideAllCanvases() {
+		if(m_currentCanvas != null) {
+			m_currentCanvas.Hide();
+			m_background.SetActive(false);
+			m_currentCanvas = null;
 		}
 	}
 
-	public void SetUserEmail(string email) {
-		_user.email = email;
-		PlayerPrefs.SetString("Email", email);
-		PlayerPrefs.Save();
+	public void StartSimulation(string context) {
+		//charge the context and start the session in the backend
+		SceneManager.LoadScene("Office", LoadSceneMode.Additive);
+		//Instantiate Character
+
 	}
 
-	public void SetUserName(string name) {
-		_user.name = name;
-		PlayerPrefs.SetString("Username", name);
-		PlayerPrefs.Save();
+	public void SetUser(UserData user) {
+		m_user = user;
 	}
 
-	public UserInformation GetUserData() { return _user; }
+	public void SetSimulationCharacter(SimulationCharacter character) {
+		m_simulationCharacter = character;
+	}
 
-}
+	public void SetSimulationEnviroment(SimulationEnviroment enviroment) {
+		m_simulationEnviroment = enviroment;
+	}
 
-[Serializable]
-public class UserInformation {
-	[Header("Basic Information")]
-	public string name;
-	public string email;
+	public UserData GetUserData() { return m_user; }
+	public SimulationCharacter GetSimulationCharacter() { return m_simulationCharacter; }
+	public SimulationEnviroment GetSimulationEnviroment() { return m_simulationEnviroment; }
+
 }

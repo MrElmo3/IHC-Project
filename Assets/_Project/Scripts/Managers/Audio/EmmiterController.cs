@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(typeof(AudioSource))]
 public class EmmiterController : MonoBehaviour {
 	AudioSource _audioSource;
 	Sound _sound;

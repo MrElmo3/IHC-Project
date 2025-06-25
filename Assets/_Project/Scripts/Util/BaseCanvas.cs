@@ -3,9 +3,9 @@ using UnityEngine;
 using UnityEngine.Events;
 
 [RequireComponent(typeof(CanvasGroup))]
-public abstract class BaseCanvas<T> : StaticInstance<T> where T: MonoBehaviour {
+public abstract class BaseCanvas : MonoBehaviour {
 
-	public readonly System.Enum _type;
+	protected System.Enum _type;
 
 	private CanvasGroup _canvasGroup;
 
@@ -18,8 +18,7 @@ public abstract class BaseCanvas<T> : StaticInstance<T> where T: MonoBehaviour {
 	protected UnityAction OnCompleteShow;
 	protected UnityAction OnCompleteHide;
 
-	protected override void Awake(){
-		base.Awake();
+	protected virtual void Awake(){
 		_canvasGroup = GetComponent<CanvasGroup>();
 		OnStartHide += StartHide;
 		OnStartShow += StartShow;

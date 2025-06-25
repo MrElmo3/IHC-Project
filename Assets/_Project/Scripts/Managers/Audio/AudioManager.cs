@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.SceneManagement;
 
+[RequireComponent(typeof(AudioSource))]
 public class AudioManager : PersistentSingleton<AudioManager> {
 	[SerializeField] GameObject soundPool;
 
@@ -28,7 +29,6 @@ public class AudioManager : PersistentSingleton<AudioManager> {
 
 	private void Start() {
 		_bgAudioSource = GetComponent<AudioSource>();
-		PlayBGM("BGGame_Base");
 	}
 
 	void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
